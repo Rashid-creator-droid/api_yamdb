@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """Вьюсет для отзывов."""
+
     serializer_class = ReviewSerializer
     permission_classes = IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly
 
@@ -22,6 +24,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Вьюсет для комментариев."""
+
     serializer_class = CommentSerializer
     permission_classes = IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly
 

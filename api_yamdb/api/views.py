@@ -16,9 +16,9 @@ class CustomViewSet(
 
 
 class CategoriesViewSet(CustomViewSet):
-    queryset = Category.object.all()
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = 'admin' #заглушка
+    # permission_classes = 'admin'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
@@ -27,7 +27,7 @@ class CategoriesViewSet(CustomViewSet):
 class GenresViewSet(CustomViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = 'admin' #заглушка
+    # permission_classes = 'admin'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
@@ -36,7 +36,7 @@ class GenresViewSet(CustomViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    permission_classes = 'admin' #заглушка
+    # permission_classes = 'admin'
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category', 'genre', 'year', 'name')
+    filterset_fields = ('category__slug', 'genre__slug', 'year', 'name')
     pagination_class = LimitOffsetPagination

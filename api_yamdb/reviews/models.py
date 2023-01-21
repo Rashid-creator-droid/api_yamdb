@@ -1,6 +1,7 @@
-from django.db import models
-from django.core.validators import MaxValueValidator
 import datetime
+
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 now = datetime.datetime.now()
 
@@ -33,24 +34,22 @@ class Title(models.Model):
     name = models.CharField('Произведение', max_length=256)
     category = models.ForeignKey(
         Category,
-        on_delete=models.SET_NULL,
-        related_name='titles',
+        related_name="titles",
         blank=True,
         null=True,
+        on_delete=models.SET_NULL,
     )
     genre = models.ManyToManyField(
         Genre,
-        related_name='titles',
+        related_name="titles",
         blank=True,
-        null=True,
     )
     year = models.PositiveIntegerField(
         'Дата релиза',
         default=1895,
-        validators=[MaxValueValidator(now.year)],
+        validators=[MaxValueValidator(now.year), MinValueValidator(1895)],
     )
     description = models.TextField('Описание произведения', max_length=1000)
-    user_rating = 1
 
     class Meta:
         ordering = ['-year']

@@ -35,21 +35,24 @@ class Title(models.Model):
     category = models.ForeignKey(
         Category,
         related_name="titles",
-        blank=True,
-        null=True,
         on_delete=models.SET_NULL,
+        null=True,
     )
     genre = models.ManyToManyField(
         Genre,
         related_name="titles",
-        blank=True,
     )
     year = models.PositiveIntegerField(
         'Дата релиза',
         default=1895,
         validators=[MaxValueValidator(now.year), MinValueValidator(1895)],
     )
-    description = models.TextField('Описание произведения', max_length=1000)
+    description = models.TextField(
+        'Описание произведения',
+        max_length=1000,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         ordering = ['-year']

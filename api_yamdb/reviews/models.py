@@ -41,6 +41,7 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre,
         related_name="titles",
+        through='TitleGenre'
     )
     year = models.PositiveIntegerField(
         'Дата релиза',
@@ -61,3 +62,23 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class TitleGenre(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Жанры произведения'
+        verbose_name_plural = 'Жанры произведения'
+
+    def __str__(self):
+        return f'Жанр произведения: "{self.title}" - {self.genre}'

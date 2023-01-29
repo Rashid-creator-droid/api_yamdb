@@ -127,12 +127,14 @@ class TokenSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    lookup_field = 'slug'
     class Meta:
         model = Category
         fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    lookup_field = 'slug'
     class Meta:
         model = Genre
         fields = ('name', 'slug')
@@ -161,6 +163,9 @@ class TitleSerializer(serializers.ModelSerializer):
     description = serializers.CharField(
         required=False,
     )
+    rating = serializers.IntegerField(
+        source='reviews__score__avg', read_only=True
+    )
 
     class Meta:
         model = Title
@@ -168,10 +173,13 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True,
+    )
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
-    score = serializers.IntegerField(min_value=1, max_value=10)
 
     class Meta:
         fields = '__all__'

@@ -1,16 +1,19 @@
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework import viewsets, filters, mixins
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from reviews.models import Category, Genre, Title, Review
 from reviews.models import User
-from .permissions import IsAuthorOrReadOnly
+from .filters import TitleFilter
+from .permissions import IsUser, IsAdmin, IsModerator, IsAdminOrReadOnly, \
+    IsAdminModeratorAuthorOrReadOnly
 from .permissions import IsSuperuser
 from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, CommentSerializer, ReviewSerializer
 from .serializers import (MeSerializer, SignUpSerializer, TokenSerializer,
@@ -70,32 +73,34 @@ class MeViewDetail(APIView):
 
 
 class SignUp(APIView):
-    serializer_class = SignUpSerializer
-
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        username = request.data.get('username')
-        email = request.data.get('email')
-        if not User.objects.filter(username=username, email=email).exists():
-            serializer.save()
-        user = User.objects.get(username=username)
-        if user.confirmation_code != '':
-            return Response(status=status.HTTP_200_OK)
-        user.confirmation_code = 'test_code'
-        user.save()
+        serializer = SignUpSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.is_valid(raise_exception=True)
+            username = request.data.get('username')
+            email = request.data.get('email')
+            if not User.objects.filter(username=username, email=email).exists():
+                serializer.save()
+            user = User.objects.get(username=username)
+            if user.confirmation_code != '':
+                return Response(status=status.HTTP_200_OK)
+            user.confirmation_code = 'test_code'
+            user.save()
 
-        send_mail(
-            'Confirmation code from YaMDB',
-            user.confirmation_code,
-            'from@example.com',
-            [email],
-            fail_silently=False,
-        )
-
+            send_mail(
+                'Confirmation code from YaMDB',
+                user.confirmation_code,
+                'from@example.com',
+                [email],
+                fail_silently=False,
+            )
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
         return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
         )
 
 
@@ -132,27 +137,31 @@ class CustomViewSet(
 class CategoriesViewSet(CustomViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # permission_classes = 'admin'
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
+    lookup_field = 'slug'
 
 
 class GenresViewSet(CustomViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    # permission_classes = 'admin'
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(
+        Avg('reviews__score')
+    )
     serializer_class = TitleSerializer
-    # permission_classes = 'admin'
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category__slug', 'genre__slug', 'year', 'name')
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TitleFilter
     pagination_class = LimitOffsetPagination
 
 
@@ -160,31 +169,34 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для отзывов."""
 
     serializer_class = ReviewSerializer
-    permission_classes = IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly
-
-    def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, id=title_id)
-        serializer.save(user=self.request.user, title=title)
+    permission_classes = [IsAdminModeratorAuthorOrReadOnly]
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, id=title_id)
-        return title.reviews
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        serializer.save(author=self.request.user, title=title)
+
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
 
     serializer_class = CommentSerializer
-    permission_classes = IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly
-
-    def perform_create(self, serializer):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
-        serializer.save(user=self.request.user, review=review)
+    permission_classes = [IsAdminModeratorAuthorOrReadOnly]
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
-        return review.comments
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        serializer.save(author=self.request.user, review=review)
+
+

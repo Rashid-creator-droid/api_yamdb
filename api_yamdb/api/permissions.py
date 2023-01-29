@@ -30,11 +30,13 @@ class IsAdmin(permissions.BasePermission):
         if request.user.is_authenticated:
             user = User.objects.get(username=request.user)
             return (user.role == 'admin')
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated:
             user = User.objects.get(username=request.user)
             return (user.role == 'admin')
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 class IsModerator(permissions.BasePermission):
@@ -42,7 +44,7 @@ class IsModerator(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated:
             user = User.objects.get(username=request.user)
-            return (user.role == 'moderatror')
+            return user.role == 'moderatror'
 
 
 class IsUser(permissions.BasePermission):
@@ -54,6 +56,23 @@ class IsUser(permissions.BasePermission):
         )
 
 
-class IsAuthorOrReadOnly(BasePermission):
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (request.method in permissions.SAFE_METHODS
+                or request.user.is_authenticated and (
+                    request.user.role == 'admin'
+                    or request.user.role == 'superuser'
+                ))
+
+
+class IsAdminModeratorAuthorOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (request.method in permissions.SAFE_METHODS
+                or request.user.is_authenticated)
+
     def has_object_permission(self, request, view, obj):
-        return request.method in SAFE_METHODS or obj.user == request.user
+        return (request.method in permissions.SAFE_METHODS
+                or request.user.role == 'moderator'
+                or request.user.role == 'admin'
+                or request.user.role == 'superuser'
+                or obj.author == request.user)

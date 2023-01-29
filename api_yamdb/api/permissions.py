@@ -1,6 +1,7 @@
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from reviews.models import User
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 class IsSuperuser(permissions.BasePermission):
@@ -50,3 +51,8 @@ class IsUser(permissions.BasePermission):
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
         )
+
+
+class IsAuthorOrReadOnly(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return request.method in SAFE_METHODS or obj.user == request.user

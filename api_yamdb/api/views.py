@@ -75,32 +75,27 @@ class MeViewDetail(APIView):
 class SignUp(APIView):
     def post(self, request):
         serializer = SignUpSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.is_valid(raise_exception=True)
-            username = request.data.get('username')
-            email = request.data.get('email')
-            if not User.objects.filter(username=username, email=email).exists():
-                serializer.save()
-            user = User.objects.get(username=username)
-            if user.confirmation_code != '':
-                return Response(status=status.HTTP_200_OK)
-            user.confirmation_code = 'test_code'
-            user.save()
+        serializer.is_valid(raise_exception=True)
+        username = request.data.get('username')
+        email = request.data.get('email')
+        if not User.objects.filter(username=username, email=email).exists():
+            serializer.save()
+        user = User.objects.get(username=username)
+        if user.confirmation_code != '':
+            return Response(status=status.HTTP_200_OK)
+        user.confirmation_code = 'test_code'
+        user.save()
 
-            send_mail(
-                'Confirmation code from YaMDB',
-                user.confirmation_code,
-                'from@example.com',
-                [email],
-                fail_silently=False,
-            )
-            return Response(
-                serializer.data,
-                status=status.HTTP_200_OK
-            )
+        send_mail(
+            'Confirmation code from YaMDB',
+            user.confirmation_code,
+            'from@example.com',
+            [email],
+            fail_silently=False,
+        )
         return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
+            serializer.data,
+            status=status.HTTP_200_OK
         )
 
 

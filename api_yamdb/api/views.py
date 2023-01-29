@@ -1,20 +1,21 @@
 from django.core.mail import send_mail
-from rest_framework import filters, generics, status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from reviews.models import User
-from .permissions import IsSuperuser
-from .serializers import (MeSerializer, SignUpSerializer, TokenSerializer,
-                          UserSerializer)
-from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics, status
 from rest_framework import viewsets, filters, mixins
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from reviews.models import Category, Genre, Title, Review
-from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, CommentSerializer, ReviewSerializer
+from reviews.models import User
 from .permissions import IsAuthorOrReadOnly
+from .permissions import IsSuperuser
+from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, CommentSerializer, ReviewSerializer
+from .serializers import (MeSerializer, SignUpSerializer, TokenSerializer,
+                          UserSerializer)
+
 
 class UserView(generics.ListCreateAPIView):
     serializer_class = UserSerializer

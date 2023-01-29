@@ -1,10 +1,9 @@
 from django.core.validators import RegexValidator
-from rest_framework import serializers, status
-from rest_framework.response import Response
-from reviews.models import ROLE_CHOICES, User
 from rest_framework import serializers
 
 from reviews.models import Category, Genre, Title, Comment, Review
+from reviews.models import ROLE_CHOICES, User
+
 
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(

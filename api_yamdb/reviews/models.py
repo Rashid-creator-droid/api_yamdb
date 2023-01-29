@@ -1,13 +1,11 @@
 import datetime
-
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
 from datetime import datetime, timedelta
 
 import jwt
 from django.conf import settings
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 from django.db import models
 
@@ -167,7 +165,7 @@ class User(PermissionsMixin, AbstractBaseUser):
         unique_together = ['username', 'email']
  
 
-now = datetime.datetime.now()
+now = datetime.now()
 
 
 class Genre(models.Model):

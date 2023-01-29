@@ -110,7 +110,7 @@ class User(PermissionsMixin, AbstractBaseUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
+    REQUIRED_FIELDS = ['email', 'bio', 'role']
 
     def __str__(self):
         return self.username
@@ -217,6 +217,7 @@ class Title(models.Model):
         null=True,
     )
 
+
     class Meta:
         ordering = ['-year']
         verbose_name = 'Произведение'
@@ -264,9 +265,12 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
-
-    def __str__(self):
-        return self.text
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'],
+                name='unique_review'
+            ),
+        ]
 
 
 class Comment(models.Model):
@@ -284,6 +288,3 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-
-    def __str__(self):
-        return self.text

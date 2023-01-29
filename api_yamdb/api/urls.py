@@ -1,3 +1,5 @@
+from django.urls import path
+from .views import UserView, UserViewDetail, MeViewDetail, SignUp, TokenView
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
@@ -19,5 +21,10 @@ router.register(
     basename="comments"
 )
 urlpatterns = [
+  path('v1/users/', UserView.as_view()),
+    path('v1/users/me/', MeViewDetail.as_view()),                                   
+    path('v1/users/<username>/', UserViewDetail.as_view()),
+    path('v1/auth/signup/', SignUp.as_view()),
+    path('v1/auth/token/', TokenView.as_view()),
     path('v1/', include(router.urls)),
 ]

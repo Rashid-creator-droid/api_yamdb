@@ -34,8 +34,6 @@ def get_reader(file):
 class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
-            if User.objects.count() > 0:
-                raise Exception('В базе уже есть данные users')
             csv_reader = get_reader(USERS)
             next(csv_reader, None)
             for row in csv_reader:
@@ -50,8 +48,6 @@ class Command(BaseCommand):
                 )
             print(f'{USERS} успешно импортировалось!')
 
-            if Category.objects.count() > 0:
-                raise Exception('В базе уже есть данные Category')
             csv_reader = get_reader(CATEGORY)
             next(csv_reader, None)
             for row in csv_reader:
@@ -62,8 +58,6 @@ class Command(BaseCommand):
                 )
             print(f'{CATEGORY} успешно импортировалось!')
 
-            if Genre.objects.count() > 0:
-                raise Exception('В базе уже есть данные Genre')
             csv_reader = get_reader(GENRE)
             next(csv_reader, None)
             for row in csv_reader:
@@ -74,8 +68,6 @@ class Command(BaseCommand):
                 )
             print(f'{GENRE} успешно импортировалось!')
 
-            if Title.objects.count() > 0:
-                raise Exception('В базе уже есть данные Title')
             csv_reader = get_reader(TITLE)
             next(csv_reader, None)
             for row in csv_reader:
@@ -88,8 +80,6 @@ class Command(BaseCommand):
                 )
             print(f'{TITLE} успешно импортировалось!')
 
-            if TitleGenre.objects.count() > 0:
-                raise Exception('В базе уже есть данные TitleGenre')
             csv_reader = get_reader(GENRE_TITLE)
             next(csv_reader, None)
             for row in csv_reader:
@@ -102,8 +92,6 @@ class Command(BaseCommand):
                 )
             print(f'{GENRE_TITLE} успешно импортировалось!')
 
-            if Comment.objects.count() > 0:
-                raise Exception('В базе уже есть данные Comment')
             csv_reader = get_reader(COMMENTS)
             next(csv_reader, None)
             for row in csv_reader:
@@ -118,8 +106,6 @@ class Command(BaseCommand):
                 )
             print(f'{COMMENTS} успешно импортировалось!')
 
-            if Review.objects.count() > 0:
-                raise Exception('В базе уже есть данные Review')
             csv_reader = get_reader('review.csv')
             next(csv_reader, None)
             for row in csv_reader:

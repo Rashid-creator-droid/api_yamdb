@@ -33,7 +33,12 @@ cd api_yamdb/
 ```
 - Выполнить миграции:
 ```
+python manage.py makemigrations
 python manage.py migrate
+```
+- Выполнить импорт базы данных из csv:
+```
+python manage.py importdb
 ```
 - В папке с файлом manage.py выполните команду для запуска проекта:
 ```
@@ -43,6 +48,7 @@ python manage.py runserver
 ```
 python manage.py createsuperuser
 ```
+Для пользователей под управлением операционной системы Linux: python заменить на python3
 
 ### Над проектом работали:
 [Аюпов Рашид](https://github.com/Rashid-creator-droid) | Тимлид, контент пользователей: Category, Genre, Title

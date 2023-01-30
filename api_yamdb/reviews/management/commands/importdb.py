@@ -49,10 +49,7 @@ class Command(BaseCommand):
                     last_name=row[6],
                 )
             print(f'{USERS} успешно импортировалось!')
-        except Exception as error:
-            print(f'Ошибка импорта {USERS} - {error}')
 
-        try:
             if Category.objects.count() > 0:
                 raise Exception('В базе уже есть данные Category')
             csv_reader = get_reader(CATEGORY)
@@ -64,10 +61,7 @@ class Command(BaseCommand):
                     slug=row[2],
                 )
             print(f'{CATEGORY} успешно импортировалось!')
-        except Exception as error:
-            print(f'Ошибка импорта {CATEGORY} - {error}')
 
-        try:
             if Genre.objects.count() > 0:
                 raise Exception('В базе уже есть данные Genre')
             csv_reader = get_reader(GENRE)
@@ -79,10 +73,7 @@ class Command(BaseCommand):
                     slug=row[2],
                 )
             print(f'{GENRE} успешно импортировалось!')
-        except Exception as error:
-            print(f'Ошибка импорта {GENRE} - {error}')
 
-        try:
             if Title.objects.count() > 0:
                 raise Exception('В базе уже есть данные Title')
             csv_reader = get_reader(TITLE)
@@ -96,10 +87,7 @@ class Command(BaseCommand):
                     category=obj_category,
                 )
             print(f'{TITLE} успешно импортировалось!')
-        except Exception as error:
-            print(f'Ошибка импорта {TITLE} - {error}')
 
-        try:
             if TitleGenre.objects.count() > 0:
                 raise Exception('В базе уже есть данные TitleGenre')
             csv_reader = get_reader(GENRE_TITLE)
@@ -113,10 +101,7 @@ class Command(BaseCommand):
                     title=obj_title,
                 )
             print(f'{GENRE_TITLE} успешно импортировалось!')
-        except Exception as error:
-            print(f'Ошибка импорта {GENRE_TITLE} - {error}')
 
-        try:
             if Comment.objects.count() > 0:
                 raise Exception('В базе уже есть данные Comment')
             csv_reader = get_reader(COMMENTS)
@@ -132,10 +117,7 @@ class Command(BaseCommand):
                     pub_date=row[4],
                 )
             print(f'{COMMENTS} успешно импортировалось!')
-        except Exception as error:
-            print(f'Ошибка импорта {COMMENTS} - {error}')
 
-        try:
             if Review.objects.count() > 0:
                 raise Exception('В базе уже есть данные Review')
             csv_reader = get_reader('review.csv')
@@ -153,4 +135,4 @@ class Command(BaseCommand):
                 )
             print(f'{REVIEW} успешно импортировалось!')
         except Exception as error:
-            print(f'Ошибка импорта {REVIEW} - {error}')
+            print(f'Ошибка импорта {error}')

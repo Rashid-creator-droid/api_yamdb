@@ -6,6 +6,7 @@ from reviews.models import User
 
 
 class JWTAuthentication(authentication.BaseAuthentication):
+    www_authenticate_realm = "api"
     authentication_header_prefix = 'Bearer'
 
     def authenticate(self, request, token=None):
@@ -47,6 +48,10 @@ class JWTAuthentication(authentication.BaseAuthentication):
         # succeed. We delegate the actual credentials authentication to the
         # method below.
         return self._authenticate_credentials(request, token)
+
+    def authenticate_header(self, request):
+        return f'Basic realm={self.www_authenticate_realm}'
+
 
     def _authenticate_credentials(self, request, token):
         try:

@@ -11,10 +11,6 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
     def authenticate(self, request, token=None):
         request.user = None
-
-        # `auth_header` should be an array with two elements: 1) the name of
-        # the authentication header (in this case, "Token") and 2) the JWT
-        # that we should authenticate against.
         auth_header = authentication.get_authorization_header(request).split()
         auth_header_prefix = self.authentication_header_prefix.lower()
 
@@ -22,36 +18,19 @@ class JWTAuthentication(authentication.BaseAuthentication):
             return None
 
         if len(auth_header) == 1:
-            # Invalid token header. No credentials provided. Do not attempt to
-            # authenticate.
             return None
 
         elif len(auth_header) > 2:
-            # Invalid token header. The Token string should not contain spaces.
-            # Do not attempt to authenticate.
             return None
-
-        # The JWT library we're using can't handle the `byte` type, which is
-        # commonly used by standard libraries in Python 3. To get around this,
-        # we simply have to decode `prefix` and `token`. This does not make for
-        # clean code, but it is a good decision because we would get an error
-        # if we didn't decode these values.
         prefix = auth_header[0].decode('utf-8')
         token = auth_header[1].decode('utf-8')
 
         if prefix.lower() != auth_header_prefix:
-            # The auth header prefix is not what we expected. Do not attempt to
-            # authenticate.
             return None
-
-        # By now, we are sure there is a *chance* that authentication will
-        # succeed. We delegate the actual credentials authentication to the
-        # method below.
         return self._authenticate_credentials(request, token)
 
     def authenticate_header(self, request):
         return f'Basic realm={self.www_authenticate_realm}'
-
 
     def _authenticate_credentials(self, request, token):
         try:
@@ -74,4 +53,4 @@ class JWTAuthentication(authentication.BaseAuthentication):
             msg = 'This user has been deactivated.'
             raise exceptions.AuthenticationFailed(msg)
 
-        return (user, token)
+        return user, token

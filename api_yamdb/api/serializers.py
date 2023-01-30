@@ -8,17 +8,27 @@ from reviews.models import ROLE_CHOICES, User
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
-        validators=[RegexValidator(
-            regex='^[\w.@+-]+',
-            message='Используйте допустимые символы в username'
-        )])
+        validators=[
+            RegexValidator(
+                regex=r'^[\w.@+-]+',
+                message='Используйте допустимые символы в username',
+            )
+        ]
+    )
     email = serializers.EmailField(max_length=254)
     first_name = serializers.CharField(max_length=150, required=False)
     last_name = serializers.CharField(max_length=150, required=False)
     role = serializers.ChoiceField(choices=ROLE_CHOICES, required=False)
 
     class Meta:
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
         model = User
 
     def validate(self, data):
@@ -44,30 +54,44 @@ class UserSerializer(serializers.ModelSerializer):
 class MeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
-        validators=[RegexValidator(
-            regex='^[\w.@+-]+',
-            message='Используйте допустимые символы в username'
-        )])
+        validators=[
+            RegexValidator(
+                regex=r'^[\w.@+-]+',
+                message='Используйте допустимые символы в username',
+            )
+        ]
+    )
     email = serializers.EmailField(max_length=254)
     first_name = serializers.CharField(max_length=150, required=False)
     last_name = serializers.CharField(max_length=150, required=False)
     role = serializers.ChoiceField(
         choices=ROLE_CHOICES,
         required=False,
-        read_only=True)
+        read_only=True
+    )
 
     class Meta:
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
         model = User
 
 
 class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=150,
-        validators=[RegexValidator(
-            regex='^[\w.@+-]+',
-            message='Используйте допустимые символы в username'
-        )])
+        validators=[
+            RegexValidator(
+                regex=r'^[\w.@+-]+',
+                message='Используйте допустимые символы в username',
+            )
+        ]
+    )
     email = serializers.EmailField(max_length=254)
 
     def validate(self, data):
@@ -103,7 +127,7 @@ class TokenSerializer(serializers.ModelSerializer):
     token = serializers.CharField(
         max_length=255,
         required=False,
-        read_only=True
+        read_only=True,
     )
 
     class Meta:
@@ -128,6 +152,7 @@ class TokenSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     lookup_field = 'slug'
+
     class Meta:
         model = Category
         fields = ('name', 'slug')
@@ -135,6 +160,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class GenreSerializer(serializers.ModelSerializer):
     lookup_field = 'slug'
+
     class Meta:
         model = Genre
         fields = ('name', 'slug')
@@ -154,7 +180,7 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = GenreListField(
         slug_field='slug',
         queryset=Genre.objects.all(),
-        many=True
+        many=True,
     )
     category = CategoryListField(
         slug_field='slug',
@@ -164,7 +190,8 @@ class TitleSerializer(serializers.ModelSerializer):
         required=False,
     )
     rating = serializers.IntegerField(
-        source='reviews__score__avg', read_only=True
+        source='reviews__score__avg',
+        read_only=True,
     )
 
     class Meta:
@@ -178,13 +205,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username'
+        read_only=True,
+        slug_field='username',
     )
 
     class Meta:
         fields = '__all__'
         model = Review
-        read_field_only = ('title', )
+        read_field_only = ('title',)
 
     def validate(self, data):
         if self.context["request"].method == "POST":
@@ -208,7 +236,7 @@ class CommentSerializer(serializers.ModelSerializer):
             'id',
             'author',
             'text',
-            'pub_date'
+            'pub_date',
         )
         model = Comment
-        read_only_fields = ('review', )
+        read_only_fields = ('review',)

@@ -5,19 +5,30 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework import viewsets, filters, mixins
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from reviews.models import Category, Genre, Title, Review
 from reviews.models import User
 from .filters import TitleFilter
-from .permissions import IsUser, IsAdmin, IsModerator, IsAdminOrReadOnly, \
-    IsAdminModeratorAuthorOrReadOnly
+from .permissions import (
+    IsAdminOrReadOnly,
+    IsAdminModeratorAuthorOrReadOnly,
+)
 from .permissions import IsSuperuser
-from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, CommentSerializer, ReviewSerializer
-from .serializers import (MeSerializer, SignUpSerializer, TokenSerializer,
-                          UserSerializer)
+from .serializers import (
+    CategorySerializer,
+    GenreSerializer,
+    TitleSerializer,
+    CommentSerializer,
+    ReviewSerializer,
+)
+from .serializers import (
+    MeSerializer,
+    SignUpSerializer,
+    TokenSerializer,
+    UserSerializer,
+)
 
 
 class UserView(generics.ListCreateAPIView):
@@ -95,7 +106,7 @@ class SignUp(APIView):
         )
         return Response(
             serializer.data,
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
 
@@ -112,10 +123,8 @@ class TokenView(APIView):
         user = User.objects.get(username=username)
         if user.confirmation_code == confirmation_code:
             return Response(
-                {
-                    'token': user.token
-                },
-                status=status.HTTP_201_CREATED
+                {'token': user.token},
+                status=status.HTTP_201_CREATED,
             )
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -155,16 +164,14 @@ class TitleViewSet(viewsets.ModelViewSet):
     )
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     pagination_class = LimitOffsetPagination
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """Вьюсет для отзывов."""
-
     serializer_class = ReviewSerializer
-    permission_classes = [IsAdminModeratorAuthorOrReadOnly]
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -177,12 +184,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-
 class CommentViewSet(viewsets.ModelViewSet):
-    """Вьюсет для комментариев."""
-
     serializer_class = CommentSerializer
-    permission_classes = [IsAdminModeratorAuthorOrReadOnly]
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
@@ -193,5 +197,3 @@ class CommentViewSet(viewsets.ModelViewSet):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user, review=review)
-
-

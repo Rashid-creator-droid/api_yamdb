@@ -6,7 +6,7 @@ from reviews.models import User
 
 
 class JWTAuthentication(authentication.BaseAuthentication):
-    www_authenticate_realm = "api"
+    www_authenticate_realm = 'api'
     authentication_header_prefix = 'Bearer'
 
     def authenticate(self, request, token=None):

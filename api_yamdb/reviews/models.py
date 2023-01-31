@@ -177,23 +177,22 @@ class Title(models.Model):
     name = models.CharField('Произведение', max_length=256)
     category = models.ForeignKey(
         Category,
-        related_name="titles",
+        related_name='titles',
         on_delete=models.SET_NULL,
         null=True,
     )
     genre = models.ManyToManyField(
         Genre,
-        related_name="titles",
+        related_name='titles',
         through='TitleGenre',
     )
     year = models.PositiveIntegerField(
         'Дата релиза',
-        default=1895,
-        validators=[MaxValueValidator(NOW.year), MinValueValidator(1895)],
+        default=NOW,
+        validators=[MaxValueValidator(NOW.year)],
     )
     description = models.TextField(
         'Описание произведения',
-        max_length=1000,
         blank=True,
         null=True,
     )

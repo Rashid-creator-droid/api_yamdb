@@ -11,8 +11,9 @@ from rest_framework.views import APIView
 from reviews.models import Category, Genre, Review, Title, User
 
 from .filters import TitleFilter
-from .permissions import (IsAdminModeratorAuthorOrReadOnly, IsAdminOrReadOnly,
-                          IsSuperuser, IsAdmin, IsUser)
+from .permissions import (IsAdmin,
+                          IsModerator, IsSuperuser, IsUser,
+                          ReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, MeSerializer, ReviewSerializer,
                           SignUpSerializer, TitleSerializer, TokenSerializer,
@@ -117,7 +118,7 @@ class CustomViewSet(
 class CategoriesViewSet(CustomViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdmin | ReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
@@ -127,7 +128,7 @@ class CategoriesViewSet(CustomViewSet):
 class GenresViewSet(CustomViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdmin | ReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = LimitOffsetPagination
@@ -139,7 +140,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         Avg('reviews__score')
     )
     serializer_class = TitleSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdmin | ReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     pagination_class = LimitOffsetPagination
@@ -147,7 +148,13 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+    permission_classes = permission_classes = (
+        ReadOnly
+        | IsSuperuser
+        | IsAdmin
+        | IsModerator
+        | IsUser,
+    )
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -162,7 +169,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+    permission_classes = permission_classes = (
+        ReadOnly
+        | IsSuperuser
+        | IsAdmin
+        | IsModerator
+        | IsUser,
+    )
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')

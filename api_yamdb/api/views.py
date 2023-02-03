@@ -11,9 +11,7 @@ from rest_framework.views import APIView
 from reviews.models import Category, Genre, Review, Title, User
 
 from .filters import TitleFilter
-from .permissions import (IsAdmin,
-                          IsModerator, IsSuperuser, IsUser,
-                          ReadOnly)
+from .permissions import IsAdmin, IsModerator, IsSuperuser, IsUser, ReadOnly
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, MeSerializer, ReviewSerializer,
                           SignUpSerializer, TitleSerializer, TokenSerializer,

@@ -116,6 +116,7 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
         'api.backends.JWTAuthentication',
     ),
 
@@ -126,3 +127,5 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ]
 }
+
+DEFAULT_FROM_EMAIL = 'from@example.com'

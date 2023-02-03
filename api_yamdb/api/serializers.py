@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
         validators=[RegexValidator(
-            regex='^[\w.@+-]+',
+            regex=r'^[\w.@+-]+',
             message='Используйте допустимые символы в username'
         )])
     email = serializers.EmailField(max_length=254)
@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'bio',
-            'role'
+            'role',
         )
         model = User
 
@@ -53,7 +53,7 @@ class MeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
         validators=[RegexValidator(
-            regex='^[\w.@+-]+',
+            regex=r'^[\w.@+-]+',
             message='Используйте допустимые символы в username'
         )])
     email = serializers.EmailField(max_length=254)
@@ -71,7 +71,7 @@ class MeSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'bio',
-            'role'
+            'role',
         )
         model = User
 
@@ -80,7 +80,7 @@ class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=150,
         validators=[RegexValidator(
-            regex='^[\w.@+-]+',
+            regex=r'^[\w.@+-]+',
             message='Используйте допустимые символы в username'
         )])
     email = serializers.EmailField(max_length=254)
@@ -99,9 +99,6 @@ class SignUpSerializer(serializers.Serializer):
                     f'Пользователь с username {username} уже существует!'
                 )
         if username != '*****' and username.lower() == 'me':
-            # В других местах смысла проверять нет!!!
-            # По хорошему dict.get(key, default) работает даже без defaul,
-            # в этом случае в случае отсутствия ключа поставляется None
             raise serializers.ValidationError(
                 f'username {username} зарезервировано!'
             )

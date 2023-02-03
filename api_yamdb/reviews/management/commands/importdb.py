@@ -26,99 +26,113 @@ REVIEW = 'review.csv'
 
 def get_reader(file):
     csv_path = os.path.join(settings.BASE_DIR, 'static/data/', file)
-    csv_file = open(csv_path, 'r', encoding='utf-8')
-    reader = csv.reader(csv_file, delimiter=',')
+    csv_file = open(csv_path, encoding='utf-8')
+    reader = csv.DictReader(csv_file, delimiter=',')
     return reader
+
+
+def import_users():
+    csv_reader = get_reader(USERS)
+    for row in csv_reader:
+        obj, created = User.objects.get_or_create(
+            id=row['id'],
+            username=row['username'],
+            email=row['email'],
+            role=row['role'],
+            bio=row['bio'],
+            first_name=row['first_name'],
+            last_name=row['last_name'],
+        )
+    print(f'{USERS} успешно импортировалось!')
+
+
+def import_category():
+    csv_reader = get_reader(CATEGORY)
+    for row in csv_reader:
+        obj, created = Category.objects.get_or_create(
+            id=row['id'],
+            name=row['name'],
+            slug=row['slug'],
+        )
+    print(f'{CATEGORY} успешно импортировалось!')
+
+
+def import_genre():
+    csv_reader = get_reader(GENRE)
+    for row in csv_reader:
+        obj, created = Genre.objects.get_or_create(
+            id=row['id'],
+            name=row['name'],
+            slug=row['slug'],
+        )
+    print(f'{GENRE} успешно импортировалось!')
+
+
+def import_title():
+    csv_reader = get_reader(TITLE)
+    for row in csv_reader:
+        obj_category = get_object_or_404(Category, id=row['category'])
+        obj, created = Title.objects.get_or_create(
+            id=row['id'],
+            name=row['name'],
+            year=row['year'],
+            category=obj_category,
+        )
+    print(f'{TITLE} успешно импортировалось!')
+
+
+def import_genre_title():
+    csv_reader = get_reader(GENRE_TITLE)
+    for row in csv_reader:
+        obj_genre = get_object_or_404(Genre, id=row['genre'])
+        obj_title = get_object_or_404(Title, id=row['title'])
+        obj, created = TitleGenre.objects.get_or_create(
+            id=row['id'],
+            genre=obj_genre,
+            title=obj_title,
+        )
+    print(f'{GENRE_TITLE} успешно импортировалось!')
+
+
+def import_comments():
+    csv_reader = get_reader(COMMENTS)
+    for row in csv_reader:
+        obj_review = get_object_or_404(Review, id=row['review_id'])
+        obj_author = get_object_or_404(User, id=row['author'])
+        obj, created = Comment.objects.get_or_create(
+            id=row['id'],
+            review=obj_review,
+            text=row['text'],
+            author=obj_author,
+            pub_date=row['pub_date'],
+        )
+    print(f'{COMMENTS} успешно импортировалось!')
+
+
+def import_review():
+    csv_reader = get_reader('review.csv')
+    for row in csv_reader:
+        obj_title = get_object_or_404(Title, id=row['title_id'])
+        obj_author = get_object_or_404(User, id=row['author'])
+        obj, created = Review.objects.get_or_create(
+            id=row['id'],
+            title=obj_title,
+            text=row['text'],
+            author=obj_author,
+            score=row['score'],
+            pub_date=row['pub_date'],
+        )
+    print(f'{REVIEW} успешно импортировалось!')
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
-            csv_reader = get_reader(USERS)
-            next(csv_reader, None)
-            for row in csv_reader:
-                obj, created = User.objects.get_or_create(
-                    id=row[0],
-                    username=row[1],
-                    email=row[2],
-                    role=row[3],
-                    bio=row[4],
-                    first_name=row[5],
-                    last_name=row[6],
-                )
-            print(f'{USERS} успешно импортировалось!')
-
-            csv_reader = get_reader(CATEGORY)
-            next(csv_reader, None)
-            for row in csv_reader:
-                obj, created = Category.objects.get_or_create(
-                    id=row[0],
-                    name=row[1],
-                    slug=row[2],
-                )
-            print(f'{CATEGORY} успешно импортировалось!')
-
-            csv_reader = get_reader(GENRE)
-            next(csv_reader, None)
-            for row in csv_reader:
-                obj, created = Genre.objects.get_or_create(
-                    id=row[0],
-                    name=row[1],
-                    slug=row[2],
-                )
-            print(f'{GENRE} успешно импортировалось!')
-
-            csv_reader = get_reader(TITLE)
-            next(csv_reader, None)
-            for row in csv_reader:
-                obj_category = get_object_or_404(Category, id=row[3])
-                obj, created = Title.objects.get_or_create(
-                    id=row[0],
-                    name=row[1],
-                    year=row[2],
-                    category=obj_category,
-                )
-            print(f'{TITLE} успешно импортировалось!')
-
-            csv_reader = get_reader(GENRE_TITLE)
-            next(csv_reader, None)
-            for row in csv_reader:
-                obj_genre = get_object_or_404(Genre, id=row[2])
-                obj_title = get_object_or_404(Title, id=row[1])
-                obj, created = TitleGenre.objects.get_or_create(
-                    id=row[0],
-                    genre=obj_genre,
-                    title=obj_title,
-                )
-            print(f'{GENRE_TITLE} успешно импортировалось!')
-
-            csv_reader = get_reader(COMMENTS)
-            next(csv_reader, None)
-            for row in csv_reader:
-                obj_review = get_object_or_404(Review, id=row[1])
-                obj_user = get_object_or_404(User, id=row[3])
-                obj, created = Comment.objects.get_or_create(
-                    id=row[0],
-                    review=obj_review,
-                    text=row[2],
-                    author=obj_user,
-                    pub_date=row[4],
-                )
-            print(f'{COMMENTS} успешно импортировалось!')
-
-            csv_reader = get_reader('review.csv')
-            next(csv_reader, None)
-            for row in csv_reader:
-                obj_title = get_object_or_404(Title, id=row[1])
-                obj_user = get_object_or_404(User, id=row[3])
-                obj, created = Review.objects.get_or_create(
-                    id=row[0],
-                    title=obj_title,
-                    text=row[2],
-                    author=obj_user,
-                    score=row[4],
-                    pub_date=row[5],
-                )
-            print(f'{REVIEW} успешно импортировалось!')
+            import_users()
+            import_category()
+            import_genre()
+            import_title()
+            import_review()
+            import_comments()
         except Exception as error:
             print(f'Ошибка импорта {error}')

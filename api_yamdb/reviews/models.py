@@ -1,14 +1,11 @@
 from datetime import datetime, timedelta
 
 import jwt
+from api.usermanager import UserManager
 from django.conf import settings
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    BaseUserManager,
-    PermissionsMixin,
-)
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.validators import RegexValidator
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 from django.db import models
 
 NOW = datetime.now()
@@ -20,38 +17,6 @@ ROLE_CHOICES = (
 )
 
 
-class UserManager(BaseUserManager):
-    def create_user(self, username, email, password, role, bio):
-        if not username:
-            raise ValueError('Необходимо ввести username')
-        if not email:
-            raise ValueError('Необходимо ввести email')
-
-        user = self.model(
-            email=self.normalize_email(email),
-            username=username,
-            role=role,
-            bio=bio,
-        )
-
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, username, email, password, role, bio):
-        user = self.create_user(
-            username,
-            email,
-            password=password,
-            role=role,
-            bio=bio,
-        )
-        user.is_admin = True
-        user.role = 'superuser'
-        user.save(using=self._db)
-        return user
-
-
 class User(PermissionsMixin, AbstractBaseUser):
     username = models.CharField(
         verbose_name='Username',
@@ -61,8 +26,7 @@ class User(PermissionsMixin, AbstractBaseUser):
         validators=[RegexValidator(
             regex=r'^[\w.@+-]+',
             message='ИСпользуйте допустимые символы в username',
-        )
-        ],
+        )],
     )
 
     email = models.EmailField(
@@ -131,11 +95,27 @@ class User(PermissionsMixin, AbstractBaseUser):
         return self.is_admin
 
     @property
+    def is_user(self):
+        return self.role == 'user'
+
+    @property
+    def is_moderator(self):
+        return self.role == 'moderator'
+
+    @property
+    def is_administrator(self):
+        return self.role == 'admin'
+
+    @property
+    def is_superuser(self):
+        return self.role == 'superuser'
+
+    @property
     def token(self):
         return self._generate_jwt_token()
 
     def _generate_jwt_token(self):
-        dt = datetime.now()
+        dt = NOW
         td = timedelta(days=1)
         payload = self.pk
         token = jwt.encode(

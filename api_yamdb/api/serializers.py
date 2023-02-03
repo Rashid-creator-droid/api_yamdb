@@ -8,13 +8,10 @@ from reviews.models import ROLE_CHOICES, User
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
-        validators=[
-            RegexValidator(
-                regex=r'^[\w.@+-]+',
-                message='Используйте допустимые символы в username',
-            )
-        ]
-    )
+        validators=[RegexValidator(
+            regex='^[\w.@+-]+',
+            message='Используйте допустимые символы в username'
+        )])
     email = serializers.EmailField(max_length=254)
     first_name = serializers.CharField(max_length=150, required=False)
     last_name = serializers.CharField(max_length=150, required=False)
@@ -27,48 +24,43 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'bio',
-            'role',
+            'role'
         )
         model = User
 
     def validate(self, data):
-        if 'email' in data:
-            email = data['email']
-            if User.objects.filter(email=email).exists():
-                raise serializers.ValidationError(
-                    f'Пользователь с email {email} уже существует!'
-                )
-        if 'username' in data:
-            username = data['username']
-            if User.objects.filter(username=username).exists():
-                raise serializers.ValidationError(
-                    f'Пользователь с username {username} уже существует!'
-                )
-            if username.lower() == 'me':
-                raise serializers.ValidationError(
-                    f'username {username} зарезервировано!'
-                )
+        email = data.get('email')
+        username = data.get('username')
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError(
+                f'Пользователь с email {email} уже существует!'
+            )
+
+        if User.objects.filter(username=username).exists():
+            raise serializers.ValidationError(
+                f'Пользователь с username {username} уже существует!'
+            )
+        if username is not None and username.lower() == 'me':
+            raise serializers.ValidationError(
+                f'username {username} зарезервировано!'
+            )
         return data
 
 
 class MeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
-        validators=[
-            RegexValidator(
-                regex=r'^[\w.@+-]+',
-                message='Используйте допустимые символы в username',
-            )
-        ]
-    )
+        validators=[RegexValidator(
+            regex='^[\w.@+-]+',
+            message='Используйте допустимые символы в username'
+        )])
     email = serializers.EmailField(max_length=254)
     first_name = serializers.CharField(max_length=150, required=False)
     last_name = serializers.CharField(max_length=150, required=False)
     role = serializers.ChoiceField(
         choices=ROLE_CHOICES,
         required=False,
-        read_only=True
-    )
+        read_only=True)
 
     class Meta:
         fields = (
@@ -77,7 +69,7 @@ class MeSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'bio',
-            'role',
+            'role'
         )
         model = User
 
@@ -85,13 +77,10 @@ class MeSerializer(serializers.ModelSerializer):
 class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=150,
-        validators=[
-            RegexValidator(
-                regex=r'^[\w.@+-]+',
-                message='Используйте допустимые символы в username',
-            )
-        ]
-    )
+        validators=[RegexValidator(
+            regex='^[\w.@+-]+',
+            message='Используйте допустимые символы в username'
+        )])
     email = serializers.EmailField(max_length=254)
 
     def validate(self, data):
@@ -109,7 +98,7 @@ class SignUpSerializer(serializers.Serializer):
                 raise serializers.ValidationError(
                     f'Пользователь с username {username} уже существует!'
                 )
-        if username.lower() == 'me':
+        if username is not None and username.lower() == 'me':
             raise serializers.ValidationError(
                 f'username {username} зарезервировано!'
             )
@@ -127,7 +116,7 @@ class TokenSerializer(serializers.ModelSerializer):
     token = serializers.CharField(
         max_length=255,
         required=False,
-        read_only=True,
+        read_only=True
     )
 
     class Meta:
@@ -135,15 +124,13 @@ class TokenSerializer(serializers.ModelSerializer):
         model = User
 
     def validate(self, data):
-        if 'username' in data:
-            username = data['username']
-        if 'confirmation_code' in data:
-            confirmation_code = data.get('confirmation_code')
-        if username == '':
+        username = data['username']
+        confirmation_code = data.get('confirmation_code')
+        if not username:
             raise serializers.ValidationError(
                 'Необходимо ввести username'
             )
-        if confirmation_code == '':
+        if not confirmation_code:
             raise serializers.ValidationError(
                 'Необходимо ввести присланный confirmation code'
             )

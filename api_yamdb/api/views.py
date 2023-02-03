@@ -1,113 +1,87 @@
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, status
-from rest_framework import viewsets, filters, mixins
+from rest_framework import filters, mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from reviews.models import Category, Genre, Review, Title, User
 
-from reviews.models import Category, Genre, Title, Review
-from reviews.models import User
 from .filters import TitleFilter
-from .permissions import (
-    IsAdminOrReadOnly,
-    IsAdminModeratorAuthorOrReadOnly,
-)
-from .permissions import IsSuperuser
-from .serializers import (
-    CategorySerializer,
-    GenreSerializer,
-    TitleSerializer,
-    CommentSerializer,
-    ReviewSerializer,
-)
-from .serializers import (
-    MeSerializer,
-    SignUpSerializer,
-    TokenSerializer,
-    UserSerializer,
-)
+from .permissions import (IsAdminModeratorAuthorOrReadOnly, IsAdminOrReadOnly,
+                          IsSuperuser, IsAdmin, IsUser)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, MeSerializer, ReviewSerializer,
+                          SignUpSerializer, TitleSerializer, TokenSerializer,
+                          UserSerializer)
 
 
-class UserView(generics.ListCreateAPIView):
+class UserView(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     queryset = User.objects.all()
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
-    permission_classes = (IsSuperuser,)
-
-    def get(self, request, *args, **kwargs):
-        if request.user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        return self.list(request, *args, **kwargs)
-
-
-class UserViewDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'username'
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (IsSuperuser,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
+    permission_classes = (IsAdmin | IsSuperuser,)
 
-    def get(self, request, *args, **kwargs):
-        if request.user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        return self.retrieve(request, *args, **kwargs)
+    @action(url_path='me', methods=['get', 'patch'], detail=False,
+            permission_classes=(IsUser,))
+    def me(self, request):
+        serializer_class = MeSerializer
+        if request.method == 'GET':
+            serializer = serializer_class(request._user, many=False)
+            return Response(serializer.data)
 
-    def put(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
-class MeViewDetail(APIView):
-    serializer_class = MeSerializer
-
-    def get(self, request):
-        if request.user.is_anonymous:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        serializer = self.serializer_class(request._user, many=False)
-        return Response(serializer.data)
-
-    def patch(self, request):
-        if request.user.is_anonymous:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        user = User.objects.get(username=request._user)
-        serializer = self.serializer_class(
-            user,
-            data=request.data,
-            partial=True
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if request.method == 'PATCH':
+            user = User.objects.get(username=request._user)
+            serializer = serializer_class(
+                user,
+                data=request.data,
+                partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class SignUp(APIView):
+    serializer_class = SignUpSerializer
+
     def post(self, request):
-        serializer = SignUpSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        username = request.data.get('username')
-        email = request.data.get('email')
-        if not User.objects.filter(username=username, email=email).exists():
-            serializer.save()
-        user = User.objects.get(username=username)
-        if user.confirmation_code != '':
-            return Response(status=status.HTTP_200_OK)
-        user.confirmation_code = 'test_code'
+        user, created = User.objects.get_or_create(
+            username=request.data.get('username'),
+            email=request.data.get('email')
+        )
+
         user.save()
 
         send_mail(
             'Confirmation code from YaMDB',
-            user.confirmation_code,
+            default_token_generator.make_token(user),
             'from@example.com',
-            [email],
+            [user.email],
             fail_silently=False,
         )
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK,
-        )
+
+        if created:
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+        return Response(status=status.HTTP_200_OK)
 
 
 class TokenView(APIView):
@@ -121,10 +95,12 @@ class TokenView(APIView):
         if not User.objects.filter(username=username).exists():
             return Response(status=status.HTTP_404_NOT_FOUND)
         user = User.objects.get(username=username)
-        if user.confirmation_code == confirmation_code:
+        if default_token_generator.check_token(user, confirmation_code):
             return Response(
-                {'token': user.token},
-                status=status.HTTP_201_CREATED,
+                {
+                    'token': user.token
+                },
+                status=status.HTTP_201_CREATED
             )
         return Response(status=status.HTTP_400_BAD_REQUEST)
 

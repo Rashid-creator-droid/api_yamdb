@@ -1,6 +1,4 @@
-from rest_framework import permissions, status
-from rest_framework.response import Response
-
+from rest_framework import permissions
 from reviews.models import User
 
 
@@ -9,51 +7,44 @@ class IsSuperuser(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.user.is_authenticated:
             user = User.objects.get(username=request.user)
-            return (
-                user.role == 'superuser'
-                or user.role == 'admin'
-            )
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return user.is_superuser
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated:
             user = User.objects.get(username=request.user)
-            return (
-                user.role == 'superuser'
-                or user.role == 'admin'
-            )
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return user.is_superuser
 
 
 class IsAdmin(permissions.BasePermission):
-
     def has_permission(self, request, view):
         if request.user.is_authenticated:
             user = User.objects.get(username=request.user)
-            return user.role == 'admin'
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return (user.is_administrator)
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated:
             user = User.objects.get(username=request.user)
-            return user.role == 'admin'
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return (user.is_administrator)
 
 
 class IsModerator(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated:
             user = User.objects.get(username=request.user)
-            return user.role == 'moderatror'
+            return (user.is_moderator)
 
 
 class IsUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
         return (
-            request.method in permissions.SAFE_METHODS
-            or obj.author == request.user
+            # request.method in permissions.SAFE_METHODS
+            obj.user == request.user
         )
 
 

@@ -1,12 +1,16 @@
 from datetime import datetime, timedelta
 
 import jwt
-from api.usermanager import UserManager
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from django.core.validators import (MaxValueValidator, MinValueValidator,
-                                    RegexValidator)
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+    RegexValidator,
+)
 from django.db import models
+
+from api.usermanager import UserManager
 
 NOW = datetime.now()
 ROLE_CHOICES = (
@@ -218,10 +222,11 @@ class Review(models.Model):
         related_name='reviews',
     )
     text = models.TextField('Текст отзыва')
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         validators=[
-            MinValueValidator(1),
-            MaxValueValidator(10),
+            MinValueValidator(1, message='Допустимые значние 1-10'),
+            MaxValueValidator(10, message='Допустимые значние 1-10'),
+
         ],
     )
     pub_date = models.DateTimeField(

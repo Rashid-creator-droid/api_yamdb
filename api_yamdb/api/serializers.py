@@ -1,7 +1,15 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 
-from reviews.models import Category, Genre, Title, Comment, Review, ROLE_CHOICES, User
+from reviews.models import (
+    Category,
+    Genre,
+    Title,
+    Comment,
+    Review,
+    ROLE_CHOICES,
+    User,
+)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -202,13 +210,13 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_field_only = ('title',)
 
     def validate(self, data):
-        if self.context["request"].method == "POST":
+        if self.context['request'].method == 'POST':
             if Review.objects.filter(
-                author=self.context["request"].user,
-                title=self.context["view"].kwargs.get("title_id"),
+                author=self.context['request'].user,
+                title=self.context['view'].kwargs.get('title_id'),
             ).exists():
                 raise serializers.ValidationError(
-                    "Нельзя оставить повторный отзыв на одно произведение"
+                    'Нельзя оставить повторный отзыв на одно произведение'
                 )
         return data
 

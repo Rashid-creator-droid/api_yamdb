@@ -8,14 +8,21 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from reviews.models import Category, Genre, Review, Title, User
 
+from reviews.models import Category, Genre, Review, Title, User
 from .filters import TitleFilter
 from .permissions import IsAdmin, IsModerator, IsSuperuser, IsUser, ReadOnly
-from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, MeSerializer, ReviewSerializer,
-                          SignUpSerializer, TitleSerializer, TokenSerializer,
-                          UserSerializer)
+from .serializers import (
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    MeSerializer,
+    ReviewSerializer,
+    SignUpSerializer,
+    TitleSerializer,
+    TokenSerializer,
+    UserSerializer,
+)
 
 
 class UserView(viewsets.ModelViewSet):
@@ -104,7 +111,7 @@ class TokenView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-class CustomViewSet(
+class PostDeleteListViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.ListModelMixin,
@@ -113,7 +120,7 @@ class CustomViewSet(
     pass
 
 
-class CategoriesViewSet(CustomViewSet):
+class CategoriesViewSet(PostDeleteListViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdmin | ReadOnly,)
@@ -123,7 +130,7 @@ class CategoriesViewSet(CustomViewSet):
     lookup_field = 'slug'
 
 
-class GenresViewSet(CustomViewSet):
+class GenresViewSet(PostDeleteListViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdmin | ReadOnly,)
@@ -146,7 +153,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = permission_classes = (
+    permission_classes = (
         ReadOnly
         | IsSuperuser
         | IsAdmin
@@ -167,7 +174,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = permission_classes = (
+    permission_classes = (
         ReadOnly
         | IsSuperuser
         | IsAdmin
@@ -176,11 +183,13 @@ class CommentViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
+        review = get_object_or_404(Review, id=review_id, title=title_id)
         return review.comments.all()
 
     def perform_create(self, serializer):
+        title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
+        review = get_object_or_404(Review, id=review_id, title=title_id)
         serializer.save(author=self.request.user, review=review)

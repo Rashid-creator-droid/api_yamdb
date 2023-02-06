@@ -2,6 +2,7 @@ from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
 )
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -45,10 +46,8 @@ class Title(models.Model):
         related_name='titles',
         through='TitleGenre',
     )
-    year = models.PositiveIntegerField(
+    year = models.IntegerField(
         'Дата релиза',
-        default=timezone.now().year,
-        validators=[MaxValueValidator(timezone.now().year)],
     )
     description = models.TextField(
         'Описание произведения',
@@ -60,6 +59,13 @@ class Title(models.Model):
         ordering = ['-year']
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+
+    def clean_fields(self, exclude=None):
+        super().clean_fields(exclude=None)
+        now = timezone.now().year
+        self.year.default = now
+        if self.year > now:
+            raise ValidationError(f'Год релиза не может быть больше {now}')
 
     def __str__(self):
         return self.name

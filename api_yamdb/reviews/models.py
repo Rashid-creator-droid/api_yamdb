@@ -1,12 +1,11 @@
-from datetime import datetime
-
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
 )
 from django.db import models
+from django.utils import timezone
+
 from users.models import User
-NOW = datetime.now()
 
 
 class Genre(models.Model):
@@ -48,8 +47,8 @@ class Title(models.Model):
     )
     year = models.PositiveIntegerField(
         'Дата релиза',
-        default=NOW,
-        validators=[MaxValueValidator(NOW.year)],
+        default=timezone.now().year,
+        validators=[MaxValueValidator(timezone.now().year)],
     )
     description = models.TextField(
         'Описание произведения',

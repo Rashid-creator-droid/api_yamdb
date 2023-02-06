@@ -9,14 +9,21 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from reviews.models import Category, Genre, Review, Title, User
 
+from reviews.models import Category, Genre, Review, Title, User
 from .filters import TitleFilter
 from .permissions import IsAdmin, IsModerator, IsSuperuser, IsUser, ReadOnly
-from .serializers import (CategorySerializer, CommentSerializer,
-                          GenreSerializer, MeSerializer, ReviewSerializer,
-                          SignUpSerializer, TitleSerializer, TokenSerializer,
-                          UserSerializer)
+from .serializers import (
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    MeSerializer,
+    ReviewSerializer,
+    SignUpSerializer,
+    TitleSerializer,
+    TokenSerializer,
+    UserSerializer
+)
 
 
 class UserView(viewsets.ModelViewSet):

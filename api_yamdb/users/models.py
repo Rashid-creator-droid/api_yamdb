@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 
 import jwt
-from .usermanager import UserManager
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.validators import RegexValidator
 from django.db import models
+
+from .usermanager import UserManager
 
 USER = 'user'
 MODERATOR = 'moderator'
@@ -127,6 +128,6 @@ class User(PermissionsMixin, AbstractBaseUser):
                 'exp': int((dt + td).timestamp()),
             },
             settings.SECRET_KEY,
-            algorithm='HS256'
+            algorithm='HS256',
         )
         return token

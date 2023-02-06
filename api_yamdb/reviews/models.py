@@ -63,7 +63,6 @@ class Title(models.Model):
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=None)
         now = timezone.now().year
-        self.year.default = now
         if self.year > now:
             raise ValidationError(f'Год релиза не может быть больше {now}')
 

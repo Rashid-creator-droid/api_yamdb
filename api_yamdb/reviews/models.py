@@ -119,7 +119,7 @@ class User(PermissionsMixin, AbstractBaseUser):
         return self._generate_jwt_token()
 
     def _generate_jwt_token(self):
-        dt = NOW
+        dt = datetime.now()
         td = timedelta(days=1)
         payload = self.pk
         token = jwt.encode(

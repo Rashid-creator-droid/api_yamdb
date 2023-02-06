@@ -14,10 +14,10 @@ class JWTAuthentication(authentication.BaseAuthentication):
         auth_header = authentication.get_authorization_header(request).split()
         auth_header_prefix = self.authentication_header_prefix.lower()
 
-        if not auth_header or len(auth_header) == 1 or len(auth_header) > 2:
+        if not auth_header or len(auth_header) != 2:
             return None
 
-        (prefix, token) = (
+        prefix, token = (
             auth_header[0].decode('utf-8').lower(),
             auth_header[1].decode('utf-8')
         )
@@ -34,7 +34,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
             payload = jwt.decode(
                 token,
                 settings.SECRET_KEY,
-                algorithms="HS256"
+                algorithms='HS256'
             )
         except exceptions.AuthenticationFailed:
             msg = 'Invalid authentication. Could not decode token.'

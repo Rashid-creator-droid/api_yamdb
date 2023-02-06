@@ -36,21 +36,17 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
 
     def validate(self, data):
-        email = data.get('email', '*****')
-        username = data.get('username', '*****')
-        if User.objects.filter(email=email).exists():
+        email = data.get('email')
+        username = data.get('username')
+        if (
+            User.objects.filter(email=email).exists()
+            or User.objects.filter(username=username).exists()
+        ):
             raise serializers.ValidationError(
-                f'Пользователь с email {email} уже существует!'
+                'А Вы точно зедсь первый раз?!'
+                'Я точно помню, что такие username и/или email уже видел :)'
             )
-
-        if User.objects.filter(username=username).exists():
-            raise serializers.ValidationError(
-                f'Пользователь с username {username} уже существует!'
-            )
-        if username != '*****' and username.lower() == 'me':
-            # В других местах смысла проверять нет!!!
-            # По хорошему dict.get(key, default) работает даже без defaul,
-            # в этом случае в случае отсутствия ключа поставляется None
+        if username is not None and username.lower() == 'me':
             raise serializers.ValidationError(
                 f'username {username} зарезервировано!'
             )
@@ -94,19 +90,18 @@ class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
 
     def validate(self, data):
-        email = data.get('email', '*****')
-        username = data.get('username', '*****')
+        email = data.get('email')
+        username = data.get('username')
         if not User.objects.filter(username=username, email=email).exists():
-            if User.objects.filter(email=email).exists():
+            if (
+                User.objects.filter(email=email).exists()
+                or User.objects.filter(username=username).exists()
+            ):
                 raise serializers.ValidationError(
-                    f'Пользователь с email {email} уже существует!'
+                    'А Вы точно зедсь первый раз?!'
+                    'Я точно помню, что такие username и/или email уже видел!'
                 )
-
-            if User.objects.filter(username=username).exists():
-                raise serializers.ValidationError(
-                    f'Пользователь с username {username} уже существует!'
-                )
-        if username != '*****' and username.lower() == 'me':
+        if username is not None and username.lower() == 'me':
             raise serializers.ValidationError(
                 f'username {username} зарезервировано!'
             )
@@ -132,13 +127,13 @@ class TokenSerializer(serializers.ModelSerializer):
         model = User
 
     def validate(self, data):
-        username = data.get('username', '*****')
-        confirmation_code = data.get('confirmation_code', '******')
-        if username == '*****':
+        username = data.get('username')
+        confirmation_code = data.get('confirmation_code')
+        if username is None:
             raise serializers.ValidationError(
                 'Необходимо ввести username'
             )
-        if confirmation_code == '*****':
+        if confirmation_code is None:
             raise serializers.ValidationError(
                 'Необходимо ввести присланный confirmation code'
             )

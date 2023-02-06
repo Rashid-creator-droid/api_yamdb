@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
@@ -8,21 +9,14 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from reviews.models import Category, Genre, Review, Title, User
+
 from .filters import TitleFilter
 from .permissions import IsAdmin, IsModerator, IsSuperuser, IsUser, ReadOnly
-from .serializers import (
-    CategorySerializer,
-    CommentSerializer,
-    GenreSerializer,
-    MeSerializer,
-    ReviewSerializer,
-    SignUpSerializer,
-    TitleSerializer,
-    TokenSerializer,
-    UserSerializer,
-)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, MeSerializer, ReviewSerializer,
+                          SignUpSerializer, TitleSerializer, TokenSerializer,
+                          UserSerializer)
 
 
 class UserView(viewsets.ModelViewSet):
@@ -77,7 +71,7 @@ class SignUp(APIView):
         send_mail(
             'Confirmation code from YaMDB',
             default_token_generator.make_token(user),
-            'from@example.com',
+            settings.DEFAULT_FROM_EMAIL,
             [user.email],
             fail_silently=False,
         )

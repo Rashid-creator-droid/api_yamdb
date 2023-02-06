@@ -1,6 +1,6 @@
 from django.contrib.auth.models import BaseUserManager
 
-from users.models import SUPERUSER
+from .models import SUPERUSER
 
 
 class UserManager(BaseUserManager):

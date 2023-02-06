@@ -1,15 +1,7 @@
 from django.core.validators import RegexValidator
 from rest_framework import serializers
-
-from reviews.models import (
-    Category,
-    Genre,
-    Title,
-    Comment,
-    Review,
-    ROLE_CHOICES,
-    User,
-)
+from reviews.models import Category, Comment, Genre, Review, Title
+from users.models import ROLE_CHOICES, User
 
 
 class UserSerializer(serializers.ModelSerializer):
